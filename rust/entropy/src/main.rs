@@ -7,6 +7,8 @@
 
 // Your task is to compute the Shannon entropy of a file.
 
+#![feature(iter_arith)]
+
 #![feature(test)]
 extern crate test;
 
@@ -33,16 +35,6 @@ pub fn calc_file(path: String) -> Result<f64, io::Error> {
 }
 
 pub fn entropy<T: Hash + Eq, I: Iterator<Item=T>>(xs: I) -> f64 {
-    let freqs = generate_freq_map(xs);
-    let mut sum: f64 = 0.0;
-    for (_, pi) in freqs {
-        let pif = pi as f64;
-        sum += pif * pif.log2()
-    }
-    return -1.0 * sum
-}
-
-fn generate_freq_map<T: Hash + Eq, I: Iterator<Item=T>>(xs: I) -> Vec<(T, f64)> {
     let mut map = HashMap::new();
     let mut total: i64 = 0;
     for x in xs {
@@ -50,8 +42,14 @@ fn generate_freq_map<T: Hash + Eq, I: Iterator<Item=T>>(xs: I) -> Vec<(T, f64)> 
         *counter += 1;
         total += 1;
     }
-    let pairs = map.into_iter().map(|(k,v)| (k, (v as f64)/(total as f64))).collect();
-    return pairs
+    let entropies = map.values().map(|v| entropize(*v, total));
+    let sum: f64 = entropies.sum();
+    return -1.0 * sum
+}
+
+fn entropize(x: i64, total: i64) -> f64 {
+    let y: f64 = (x as f64)/(total as f64);
+    return y * y.log2()
 }
 
 #[cfg(test)]
