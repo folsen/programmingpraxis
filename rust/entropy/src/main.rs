@@ -42,6 +42,7 @@ pub fn entropy<T: Hash + Eq, I: Iterator<Item=T>>(xs: I) -> f64 {
         *counter += 1;
         total += 1;
     }
+    // Inefficient?
     let entropies = map.values().map(|v| entropize(*v, total));
     let sum: f64 = entropies.sum();
     return -1.0 * sum
